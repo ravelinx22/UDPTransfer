@@ -1,6 +1,8 @@
 package Server;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -24,20 +26,27 @@ public class UDPServer {
 		System.out.println("Running server");
 		String msg;
 		
-		while(true) {
-			byte[] buffer = new byte[24*2014];
-			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-			
-			socket.receive(packet);
-			msg = new String(packet.getData()).trim();
-			String[] data = msg.split(SEPARATOR);
-			int id = Integer.parseInt(data[1]);
-			Long timestamp = System.currentTimeMillis() - Long.parseLong(data[2]);
-			
-			System.out.println(id + ": " + timestamp + " ms");
-			// TODO Save to file			
+		try {
+			while(true) {
+				byte[] buffer = new byte[24*2014];
+				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+				socket.receive(packet);
+				
+				PrintWriter pw = new PrintWriter(new FileWriter("./data/" +(packet.getAddress().getHostAddress()) + ".txt", true));				
+				msg = new String(packet.getData()).trim();
+				String[] data = msg.split(SEPARATOR);
+				int id = Integer.parseInt(data[1]);
+				pw.write(msg +"\n");
+				pw.close();
+				
+				Long timestamp = System.currentTimeMillis() - Long.parseLong(data[2]);
+				System.out.println(id + ": " + timestamp + " ms");
+			}	
+		} catch(Exception e) {
+			e.printStackTrace();
 		}
 	}
+	
 	
 	/* Main */
 	public static void main(String[] args) throws Exception {
