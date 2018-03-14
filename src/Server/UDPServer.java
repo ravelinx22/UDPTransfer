@@ -9,6 +9,7 @@ public class UDPServer {
 	
 	/* Constants */
 	public final static int PORT = 7070;
+	public final static String SEPARATOR = ";";
 	
 	/* Attributes */
 	private DatagramSocket socket;
@@ -29,8 +30,12 @@ public class UDPServer {
 			
 			socket.receive(packet);
 			msg = new String(packet.getData()).trim();
+			String[] data = msg.split(SEPARATOR);
+			int id = Integer.parseInt(data[1]);
+			Long timestamp = System.currentTimeMillis() - Long.parseLong(data[2]);
 			
-			System.out.println("Message received from " + packet.getAddress().getHostAddress() + " was " + msg);
+			System.out.println(id + ": " + timestamp + " ms");
+			// TODO Save to file			
 		}
 	}
 	
