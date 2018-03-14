@@ -9,7 +9,8 @@ import java.util.Scanner;
 public class UDPClient {
 	/* Constants */
 	public final static int PORT = 7070;
-	public final static String ADDRESS = "localhost";
+	public final static String ADDRESS = "157.253.201.153";
+	public final static String SEPARATOR = ";";
 	
 	/* Attributes */
 	private DatagramSocket socket;
@@ -29,7 +30,7 @@ public class UDPClient {
 		String in;
 		
 		while(true) {
-			in = scanner.nextLine();	
+			in = scanner.nextLine() + SEPARATOR + "1" + SEPARATOR + System.currentTimeMillis();	
 			DatagramPacket packet = new DatagramPacket(in.getBytes(), in.getBytes().length, this.serverAddress, PORT);
 			this.socket.send(packet);
 		}
