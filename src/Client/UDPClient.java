@@ -28,9 +28,10 @@ public class UDPClient {
 	private int start() throws IOException {
 		System.out.println("Running client");
 		String in;
+		int i = 1;
 		
 		while(true) {
-			in = scanner.nextLine() + SEPARATOR + "1" + SEPARATOR + System.currentTimeMillis();	
+			in = scanner.nextLine() + SEPARATOR + (i++) + SEPARATOR + System.currentTimeMillis();	
 			DatagramPacket packet = new DatagramPacket(in.getBytes(), in.getBytes().length, this.serverAddress, PORT);
 			this.socket.send(packet);
 		}
