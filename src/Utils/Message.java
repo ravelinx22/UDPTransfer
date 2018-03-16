@@ -1,6 +1,7 @@
+package Utils;
 import java.io.Serializable;
 
-public class Utils implements Serializable {
+public class Message implements Serializable {
 
 	/* Serialization */
 	private static final long serialVersionUID = 1L;
@@ -11,7 +12,7 @@ public class Utils implements Serializable {
 	private Long startingTimestamp;
 	private Long endingTimestamp;
 	
-	public Utils(String message) {
+	public Message(String message) {
 		this.startingTimestamp = System.currentTimeMillis();
 	}
 	

@@ -1,11 +1,15 @@
 package Server;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+
+import Utils.Message;
 
 public class UDPServer {
 	
@@ -24,7 +28,6 @@ public class UDPServer {
 	/* Methods */
 	private void listen() throws Exception {
 		System.out.println("Running server");
-		String msg;
 		
 		try {
 			while(true) {
@@ -32,16 +35,18 @@ public class UDPServer {
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				socket.receive(packet);
 				
-				PrintWriter pw = new PrintWriter(new FileWriter("./data/" +(packet.getAddress().getHostAddress()) + ".txt", true));				
-				msg = new String(packet.getData()).trim();
-				String[] data = msg.split(SEPARATOR);
-				int id = Integer.parseInt(data[1]);
-				pw.write(msg +"\n");
-				pw.close();
+				byte[] data = packet.getData();
+				ByteArrayInputStream in = new ByteArrayInputStream(data);
+				ObjectInputStream is = new ObjectInputStream(in);
+				Message mssg = (Message) is.readObject();
+				mssg.markAsReceived();
 				
-				Long timestamp = System.currentTimeMillis() - Long.parseLong(data[2]);
-				System.out.println(id + ": " + timestamp + " ms");
+				PrintWriter pw = new PrintWriter(new FileWriter("./data/" +(packet.getAddress().getHostAddress()) + ".txt", true));				
+				pw.write(mssg.toString() +"\n");
+				pw.close();
+				System.out.println(mssg.toString());
 			}	
+
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
