@@ -91,7 +91,7 @@ public class UDPServer {
 		}
 		
 		if((mssg.getId()-idLastMessage) > 1) {
-			lostPackets++;
+			lostPackets = (mssg.getId()-idLastMessage)-1;
 		}
 		receivedPackets++;
 		averageTime = (averageTime+mssg.getTravelingTime())/2.0;
