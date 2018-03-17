@@ -1,6 +1,8 @@
 package Server;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -43,29 +45,62 @@ public class UDPServer {
 				mssg.markAsReceived();
 				
 				String url  = "./data/" +(packet.getAddress().getHostAddress()) + ".txt";
+				File file = new File(url);
+				if(mssg.getId() == 1 && file.exists()) {
+					file.delete();
+					file.createNewFile();
+				} else if(!file.exists()) {
+					file.createNewFile();
+				}
+				
+				String metaData = calculateMetaData(file, mssg);	
 				PrintWriter pw = new PrintWriter(new FileWriter(url, true));
-				pw.write(mssg.toString() +"\n");
+				pw.println(mssg.toString());
+				pw.println(metaData);
 				pw.close();
 				System.out.println(mssg.toString());
+				System.out.println(metaData);
 			}	
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	// RECEIVED;LOST;AVERAGE
-	private void saveMetaData(String url) throws Exception {
-		Scanner sc = new Scanner(url);
-		String lastLine = null;
+	// LOST;RECEIVED;AVERAGE
+	private String calculateMetaData(File file, Message mssg) throws Exception {
+		Scanner sc = new Scanner(new FileReader(file));
 		String previousLine = null;
+		String lastLine = null;
 		
 		while(sc.hasNextLine()) {
 			previousLine = lastLine;
 			lastLine = sc.nextLine();
 		}
 		
-		System.out.println(lastLine);
+		int lostPackets = 0;
+		int receivedPackets = 0;
+		double averageTime = 0.0;
+		int idLastMessage = 1;
+
+		if(previousLine != null && lastLine != null) {
+			String[] data = lastLine.split(SEPARATOR);
+			lostPackets = Integer.parseInt(data[0]);
+			receivedPackets = Integer.parseInt(data[1]);
+			averageTime = Double.parseDouble(data[2]);
+			String[] lastData = previousLine.split(":");
+			idLastMessage = Integer.parseInt(lastData[0]);
+		}
+		
+		if((mssg.getId()-idLastMessage) > 1) {
+			lostPackets++;
+		}
+		receivedPackets++;
+		averageTime = (averageTime+mssg.getTravelingTime())/2.0;
+		
+		String metaData = lostPackets + SEPARATOR + receivedPackets + SEPARATOR + averageTime;
 		sc.close();
+		return metaData;
+		
 	}
 	
 	/* Main */
