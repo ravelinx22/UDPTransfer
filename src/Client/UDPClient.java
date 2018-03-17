@@ -42,6 +42,7 @@ public class UDPClient {
 			this.socket.send(packet);
 			messages--;
 		}
+		
 		socket.close();
 	}
 	
