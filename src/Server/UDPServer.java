@@ -17,15 +17,14 @@ import Utils.Message;
 public class UDPServer {
 	
 	/* Constants */
-	public final static int PORT = 7070;
 	public final static String SEPARATOR = ";";
 	
 	/* Attributes */
 	private DatagramSocket socket;
 	
 	/* Constructors */
-	public UDPServer() throws SocketException, IOException {
-		this.socket = new DatagramSocket(PORT);
+	public UDPServer(int port) throws SocketException, IOException {
+		this.socket = new DatagramSocket(port);
 	}
 	
 	/* Methods */
@@ -44,7 +43,7 @@ public class UDPServer {
 				Message mssg = (Message) is.readObject();
 				mssg.markAsReceived();
 				
-				String url  = "./data/" +(packet.getAddress().getHostAddress()) + ".txt";
+				String url  = "./" +(packet.getAddress().getHostAddress()) + ".txt";
 				File file = new File(url);
 				if(mssg.getId() == 1 && file.exists()) {
 					file.delete();
@@ -105,7 +104,7 @@ public class UDPServer {
 	
 	/* Main */
 	public static void main(String[] args) throws Exception {
-		UDPServer server = new UDPServer();
+		UDPServer server = new UDPServer(Integer.parseInt(args[0]));
 		server.listen();
 	}
 }
