@@ -12,7 +12,8 @@ public class Message implements Serializable {
 	private Long startingTimestamp;
 	private Long endingTimestamp;
 	
-	public Message(String message) {
+	public Message(Integer id, String message) {
+		this.id = id;
 		this.startingTimestamp = System.currentTimeMillis();
 	}
 	

@@ -30,8 +30,9 @@ public class UDPClient {
 	private void sendMessages(int messages) throws IOException {
 		System.out.println("Running client");
 		
+		Integer id = 1;
 		while(messages > 0) {	
-			Message student = new Message("buenas");
+			Message student = new Message(id++, "buenas");
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			ObjectOutputStream os = new ObjectOutputStream(outputStream);
 			os.writeObject(student);
@@ -41,6 +42,7 @@ public class UDPClient {
 			this.socket.send(packet);
 			messages--;
 		}
+		socket.close();
 	}
 	
 	/* Main */

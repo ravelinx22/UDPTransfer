@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.Scanner;
 
 import Utils.Message;
 
@@ -41,17 +42,31 @@ public class UDPServer {
 				Message mssg = (Message) is.readObject();
 				mssg.markAsReceived();
 				
-				PrintWriter pw = new PrintWriter(new FileWriter("./data/" +(packet.getAddress().getHostAddress()) + ".txt", true));				
+				String url  = "./data/" +(packet.getAddress().getHostAddress()) + ".txt";
+				PrintWriter pw = new PrintWriter(new FileWriter(url, true));
 				pw.write(mssg.toString() +"\n");
 				pw.close();
 				System.out.println(mssg.toString());
 			}	
-
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
+	// RECEIVED;LOST;AVERAGE
+	private void saveMetaData(String url) throws Exception {
+		Scanner sc = new Scanner(url);
+		String lastLine = null;
+		String previousLine = null;
+		
+		while(sc.hasNextLine()) {
+			previousLine = lastLine;
+			lastLine = sc.nextLine();
+		}
+		
+		System.out.println(lastLine);
+		sc.close();
+	}
 	
 	/* Main */
 	public static void main(String[] args) throws Exception {
