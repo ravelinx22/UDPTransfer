@@ -13,20 +13,21 @@ public class UDPClient {
 	public final static String HASH_ALGORITHM = "MD5";
 	public final static String SEND_FILE = "SEND_FILE";
 	
-	
 	/* Attributes */
 	private DatagramSocket socket;
 	private InetAddress serverAddress;
+	private int bufferSize;
 	
 	/* Constructors */
-	public UDPClient(String serverAddress, int port) throws IOException {
+	public UDPClient(String serverAddress, int port, int bufferSize) throws IOException {
 		this.socket = new DatagramSocket(port);
 		this.serverAddress = InetAddress.getByName(serverAddress);
+		this.bufferSize = bufferSize;
 	}
 
 	/* Methods */
 	public void createConnection() throws Exception {
-		byte[] incomingData = new byte[24*1024];
+		byte[] incomingData = new byte[this.bufferSize*1024];
 		long initTime = System.currentTimeMillis();
 		sendRequest(serverAddress, 7070);
 		System.out.println("File request send");
@@ -88,9 +89,11 @@ public class UDPClient {
 		String address = sc.nextLine();
 		System.out.println("Escoger puerto:");
 		int port = sc.nextInt();
+		System.out.println("Ingrese el tamaño del buffer: ");
+		int bufferSize = sc.nextInt();
 		sc.close();
 		
-		UDPClient client = new UDPClient(address, port);
+		UDPClient client = new UDPClient(address, port, bufferSize);
 		client.createConnection();
 	}
 }

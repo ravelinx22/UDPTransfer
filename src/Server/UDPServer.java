@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.security.MessageDigest;
+import java.util.Scanner;
 
 import Utils.FileEvent;
 
@@ -18,10 +19,12 @@ public class UDPServer {
 	
 	/* Attributes */
 	private DatagramSocket socket;
+	private int bufferSize;
 
 	/* Constructors */
-	public UDPServer(int port) throws Exception {
-		socket = new DatagramSocket(port);
+	public UDPServer(int port, int bufferSize) throws Exception {
+		this.socket = new DatagramSocket(port);
+		this.bufferSize = bufferSize;
 	}
 
 	/* Methods */
@@ -53,7 +56,7 @@ public class UDPServer {
 
 
 	public String receiveRequest() throws Exception {
-		byte[] incomingData = new byte[24*1024];
+		byte[] incomingData = new byte[this.bufferSize*1024];
 		DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
 		socket.receive(incomingPacket);
 		return new String(incomingPacket.getData());
@@ -101,7 +104,12 @@ public class UDPServer {
 
 	/* Main */
 	public static void main(String[] args) throws Exception {
-		UDPServer server = new UDPServer(Integer.parseInt(args[0]));
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Ingrese el tamaño del buffer: ");
+		int bufferSize = sc.nextInt();
+		sc.close();
+		
+		UDPServer server = new UDPServer(Integer.parseInt(args[0]), bufferSize);
 		server.createAndListenSocket();
 	}
 }
