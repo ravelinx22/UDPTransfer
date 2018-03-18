@@ -1,110 +1,106 @@
 package Server;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketException;
-import java.util.Scanner;
+import java.net.InetAddress;
+import java.security.MessageDigest;
 
-import Utils.Message;
+import Utils.FileEvent;
 
 public class UDPServer {
-	
 	/* Constants */
+	public final static String FILE_PATH = "./data/posi.txt";
 	public final static String SEPARATOR = ";";
+	public final static String HASH_ALGORITHM = "MD5";
+	public final static String SEND_FILE = "SEND_FILE";
+	public final static int CLIENT_PORT = 7070;
 	
 	/* Attributes */
 	private DatagramSocket socket;
-	
-	/* Constructors */
-	public UDPServer(int port) throws SocketException, IOException {
-		this.socket = new DatagramSocket(port);
-	}
-	
-	/* Methods */
-	private void listen() throws Exception {
-		System.out.println("Running server");
-		
-		try {
-			while(true) {
-				byte[] buffer = new byte[24*2014];
-				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-				socket.receive(packet);
-				
-				byte[] data = packet.getData();
-				ByteArrayInputStream in = new ByteArrayInputStream(data);
-				ObjectInputStream is = new ObjectInputStream(in);
-				Message mssg = (Message) is.readObject();
-				mssg.markAsReceived();
-				
-				String url  = "./" +(packet.getAddress().getHostAddress()) + ".txt";
-				File file = new File(url);
-				if(mssg.getId() == 1 && file.exists()) {
-					file.delete();
-					file.createNewFile();
-				} else if(!file.exists()) {
-					file.createNewFile();
-				}
-				
-				String metaData = calculateMetaData(file, mssg);	
-				PrintWriter pw = new PrintWriter(new FileWriter(url, true));
-				pw.println(mssg.toString());
-				pw.println(metaData);
-				pw.close();
-				System.out.println(mssg.toString());
-				System.out.println(metaData);
-			}	
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	// LOST;RECEIVED;AVERAGE
-	private String calculateMetaData(File file, Message mssg) throws Exception {
-		Scanner sc = new Scanner(new FileReader(file));
-		String previousLine = null;
-		String lastLine = null;
-		
-		while(sc.hasNextLine()) {
-			previousLine = lastLine;
-			lastLine = sc.nextLine();
-		}
-		
-		int lostPackets = 0;
-		int receivedPackets = 0;
-		double averageTime = 0.0;
-		int idLastMessage = 1;
 
-		if(previousLine != null && lastLine != null) {
-			String[] data = lastLine.split(SEPARATOR);
-			lostPackets = Integer.parseInt(data[0]);
-			receivedPackets = Integer.parseInt(data[1]);
-			averageTime = Double.parseDouble(data[2]);
-			String[] lastData = previousLine.split(":");
-			idLastMessage = Integer.parseInt(lastData[0]);
-		}
-		
-		if((mssg.getId()-idLastMessage) > 1) {
-			lostPackets += (mssg.getId()-idLastMessage)-1;
-		}
-		receivedPackets++;
-		averageTime = (averageTime+mssg.getTravelingTime())/2.0;
-		
-		String metaData = lostPackets + SEPARATOR + receivedPackets + SEPARATOR + averageTime;
-		sc.close();
-		return metaData;
-		
+	/* Constructors */
+	public UDPServer(int port) throws Exception {
+		socket = new DatagramSocket(port);
+	}
+
+	/* Methods */
+	public void createAndListenSocket() throws Exception{
+		while(true) {
+			String request = receiveRequest().trim();	
+			System.out.println("User received");
+			if(request.contains(SEND_FILE)) {
+				System.out.println("File request received");
+				String address = getIpAdress(request);
+				FileEvent event = getFileEvent();
+				sendFile(event, address, CLIENT_PORT);
+				System.out.println("File send");
+			}
+		}	
 	}
 	
+	public void sendFile(FileEvent event, String address, int port) throws Exception {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ObjectOutputStream os = new ObjectOutputStream(outputStream);
+		os.writeObject(event);
+		byte[] data = outputStream.toByteArray();
+		DatagramPacket sendPacket = new DatagramPacket(data, data.length, InetAddress.getByName(address), port);
+		socket.send(sendPacket);
+		System.out.println("File sent from client");
+	}
+
+
+
+	public String receiveRequest() throws Exception {
+		byte[] incomingData = new byte[24*1024];
+		DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
+		socket.receive(incomingPacket);
+		return new String(incomingPacket.getData());
+	}
+
+	/* Helpers */
+	public FileEvent getFileEvent() throws Exception {
+		FileEvent fileEvent = new FileEvent();
+		fileEvent.setFilename(getFileName(FILE_PATH));
+		File file = new File(FILE_PATH);
+
+		if(!file.isFile())
+			throw new Exception("Invalid path");
+
+		readFile(file, fileEvent);
+		
+		return fileEvent;
+	}
+
+	public void readFile(File file, FileEvent fileEvent) throws Exception {
+		DataInputStream diStream = new DataInputStream(new FileInputStream(file));
+		long len = (int) file.length();
+		byte[] fileBytes = new byte[(int) len];
+
+		int read = 0;
+		int numRead = 0;
+		while (read < fileBytes.length && (numRead = diStream.read(fileBytes, read, fileBytes.length - read)) >= 0) {
+			read = read + numRead;
+		}
+
+		fileEvent.setFileSize(len);
+		fileEvent.setFileData(fileBytes);
+		fileEvent.setMd5Hash(MessageDigest.getInstance(HASH_ALGORITHM).digest(fileEvent.getFileData()));
+		diStream.close();
+	}
+
+	public String getFileName(String filePath) {
+		return filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
+	}
+	
+	public String getIpAdress(String request) throws Exception {
+		String[] data = request.split(SEPARATOR);
+		return data[1];
+	}
+
 	/* Main */
 	public static void main(String[] args) throws Exception {
-		UDPServer server = new UDPServer(Integer.parseInt(args[0]));
-		server.listen();
+		UDPServer server = new UDPServer(7070);
+		server.createAndListenSocket();
 	}
 }
