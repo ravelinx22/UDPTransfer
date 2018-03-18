@@ -26,6 +26,7 @@ public class UDPServer {
 
 	/* Methods */
 	public void createAndListenSocket() throws Exception{
+		System.out.println("Running server");
 		while(true) {
 			String request = receiveRequest().trim();	
 			System.out.println("User received");
