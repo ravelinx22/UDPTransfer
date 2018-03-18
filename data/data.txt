@@ -1,1 +1,2 @@
-el posas forever 21
+File transfer test via udp. The contents of these file should be the same at any system.
+For education purposes, made by William Ravelo and Nicolas Aguilar.
