@@ -10,7 +10,7 @@ import Utils.FileEvent;
 
 public class UDPServer {
 	/* Constants */
-	public final static String FILE_PATH = "./data/data.txt";
+	public final static String FILE_PATH = "./data.txt";
 	public final static String SEPARATOR = ";";
 	public final static String HASH_ALGORITHM = "MD5";
 	public final static String SEND_FILE = "SEND_FILE";
