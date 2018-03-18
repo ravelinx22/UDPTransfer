@@ -101,7 +101,7 @@ public class UDPServer {
 
 	/* Main */
 	public static void main(String[] args) throws Exception {
-		UDPServer server = new UDPServer(7070);
+		UDPServer server = new UDPServer(Integer.parseInt(args[0]));
 		server.createAndListenSocket();
 	}
 }
