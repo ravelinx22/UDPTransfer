@@ -11,7 +11,6 @@ import Utils.FileEvent;
 
 public class UDPServer {
 	/* Constants */
-	public final static String FILE_PATH = "./data.txt";
 	public final static String SEPARATOR = ";";
 	public final static String HASH_ALGORITHM = "MD5";
 	public final static String SEND_FILE = "SEND_FILE";
@@ -20,11 +19,13 @@ public class UDPServer {
 	/* Attributes */
 	private DatagramSocket socket;
 	private int bufferSize;
+	private String file_path;
 
 	/* Constructors */
-	public UDPServer(int port, int bufferSize) throws Exception {
+	public UDPServer(int port, int bufferSize, String file_path) throws Exception {
 		this.socket = new DatagramSocket(port);
 		this.bufferSize = bufferSize;
+		this.file_path = file_path;
 	}
 
 	/* Methods */
@@ -65,8 +66,8 @@ public class UDPServer {
 	/* Helpers */
 	public FileEvent getFileEvent() throws Exception {
 		FileEvent fileEvent = new FileEvent();
-		fileEvent.setFilename(getFileName(FILE_PATH));
-		File file = new File(FILE_PATH);
+		fileEvent.setFilename(getFileName(file_path));
+		File file = new File(file_path);
 
 		if(!file.isFile())
 			throw new Exception("Invalid path");
@@ -107,9 +108,12 @@ public class UDPServer {
 		Scanner sc = new Scanner(System.in);
 		System.out.println("Ingrese el tamaño del buffer: ");
 		int bufferSize = sc.nextInt();
+		sc.nextLine();
+		System.out.println("Ingrese la ruta del archivo que va a ofrecer: ");
+		String file_path = sc.nextLine();
 		sc.close();
 		
-		UDPServer server = new UDPServer(Integer.parseInt(args[0]), bufferSize);
+		UDPServer server = new UDPServer(Integer.parseInt(args[0]), bufferSize, file_path);
 		server.createAndListenSocket();
 	}
 }
