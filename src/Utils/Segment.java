@@ -1,0 +1,92 @@
+package Utils;
+import java.net.DatagramPacket;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.util.Arrays;
+
+public class Segment {
+	
+	/* Attributes */
+	private int checksum;
+	private int sequenceNumber;
+	private byte[] data;
+	private long fileLength = -1;
+	private String fileName = null;
+
+	/* Constructors */
+	
+	// Creates new segment from scratch
+	public Segment(int sequenceNumber, byte[] data) throws Exception {
+		this.sequenceNumber = sequenceNumber;
+		this.data = data;
+		this.checksum = convertByteToInt(MessageDigest.getInstance("MD5").digest(data));
+	}
+
+	// Creates segment with an already received packate
+	public Segment(DatagramPacket packet, boolean usesMetaData) {
+		byte[] data = packet.getData();
+		ByteBuffer buffer = ByteBuffer.wrap(data);
+		checksum = buffer.getInt();
+		sequenceNumber = buffer.getInt();
+		this.data = Arrays.copyOfRange(buffer.array(), Constants.headerSize, data.length);
+		if (usesMetaData && sequenceNumber == 0 && isCorrect()) {
+			fileLength = buffer.getLong();
+			fileName = new String(this.data, 12, buffer.getInt());
+		}
+	}
+
+	/* Helpers */	
+	public boolean isCorrect()  {
+		try {
+			int calculatedChecksum = convertByteToInt(MessageDigest.getInstance("MD5").digest(data));
+			return this.checksum == calculatedChecksum;
+		} catch(Exception e) {
+			return false;
+		}
+	}
+
+	public boolean isSegmentMetadata() {
+		return sequenceNumber == 0;
+	}
+	
+	public int convertByteToInt(byte[] b)
+	{           
+		int value= 0;
+		for(int i=0; i<b.length; i++)
+			value = (value << 8) | b[i];     
+		return value;       
+	}
+	
+	/* Getters */
+	public long getFileLength() {
+		return fileLength;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public int getDataLength() {
+		return data.length;
+	}
+
+	public int getSequenceNumber() {
+		return sequenceNumber;
+	}
+
+	public byte[] getData() {
+		return data;
+	}
+
+	public byte[] getBytes() {
+		ByteBuffer buffer = ByteBuffer.allocate(data.length + Constants.headerSize);
+		buffer.putInt(checksum);
+		buffer.putInt(sequenceNumber);
+		buffer.put(data, 0, data.length);
+		return buffer.array();
+	}
+	
+	public int getLength() {
+		return data.length + Constants.headerSize;
+	}
+}
