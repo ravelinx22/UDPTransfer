@@ -31,12 +31,14 @@ public class UDPServer {
 
 	public void receiveRequest() throws Exception  {
 		while(true){
+			long tiempoInicial = System.currentTimeMillis();
 			// Get client address and send file
 			byte[] incomingData = new byte[24*1024];
 			DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
 			socket.receive(incomingPacket);
 			String request =  new String(incomingPacket.getData());
 			sendFile(new InetSocketAddress(request, 7070));
+			System.out.println("Tomo " + (System.currentTimeMillis()-tiempoInicial));
 		}
 	}
 

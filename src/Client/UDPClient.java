@@ -26,6 +26,8 @@ public class UDPClient {
 
 	/* Methods */
 	public void receiveFile() throws Exception {
+		long tiempoInicial = System.currentTimeMillis();
+		
 		File file;
 		RandomAccessFile out;
 		int numChunks;
@@ -84,6 +86,7 @@ public class UDPClient {
 		out.setLength(fileLength);
 
 		out.close();
+		System.out.println("Tomo " + (System.currentTimeMillis()-tiempoInicial));
 	}
 
 	// Sends an ack each time a package is received correctly
