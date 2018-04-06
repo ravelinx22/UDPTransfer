@@ -86,7 +86,9 @@ public class UDPClient {
 		out.setLength(fileLength);
 
 		out.close();
-		System.out.println("Tomo " + (System.currentTimeMillis()-tiempoInicial));
+		
+		long lastTime = (System.currentTimeMillis()-tiempoInicial)*1000;
+		System.out.println("Tomo " + lastTime + " segundos");
 	}
 
 	// Sends an ack each time a package is received correctly
