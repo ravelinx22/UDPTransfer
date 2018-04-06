@@ -87,7 +87,7 @@ public class UDPClient {
 
 		out.close();
 		
-		long lastTime = (System.currentTimeMillis()-tiempoInicial)*1000;
+		long lastTime = (System.currentTimeMillis()-tiempoInicial)/1000;
 		System.out.println("Tomo " + lastTime + " segundos");
 	}
 

@@ -39,7 +39,7 @@ public class UDPServer {
 			String request =  new String(incomingPacket.getData());
 			sendFile(new InetSocketAddress(request, 7070));
 			
-			long lastTime = (System.currentTimeMillis()-tiempoInicial)*1000;
+			long lastTime = (System.currentTimeMillis()-tiempoInicial)/1000;
 			System.out.println("Tomo " + lastTime + " segundos");
 		}
 	}
